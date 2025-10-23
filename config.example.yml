@@ -1,0 +1,19 @@
+---
+# Optional: Customize the page title (defaults to "HubStack" if not specified)
+title: "HubStack"
+
+# Optional: Customize the subtitle (if not specified, a random one is shown each page load)
+# subtitle: "Your custom subtitle here"
+
+# List of services to display, can also be added dynamically via the web interface.
+services:
+  - name: "Service Name"
+    url: "http://example.com:8080"
+    icon: "http://example.com:8080/favicon.ico"
+    description: "Description of what this service does"
+  
+  - name: "Another Service"
+    url: "http://example.com:9090"
+    icon: "http://example.com:9090/favicon.ico"
+    description: "Another service description"
+

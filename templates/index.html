@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <title>{{.Title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .add-service-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-service-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .add-service-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1rem;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #f7f7f7;
+            padding: 8px;
+        }
+
+        .service-icon-error {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .service-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .service-description {
+            font-size: 0.95rem;
+            color: #718096;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .services-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1rem;
+            }
+
+            .service-card {
+                padding: 1.5rem;
+            }
+
+            body {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #f7f7f7;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-error {
+            background: #fed7d7;
+            color: #c53030;
+            border: 1px solid #fc8181;
+        }
+
+        .alert-success {
+            background: #c6f6d5;
+            color: #2f855a;
+            border: 1px solid #9ae6b4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button class="add-service-btn" id="addServiceBtn" title="Add a new service">
+                + Add Service
+            </button>
+            <h1>🏠 {{.Title}}</h1>
+            <p class="subtitle">{{.Subtitle}}</p>
+        </header>
+
+        <div class="services-grid">
+            {{range .Services}}
+            <a href="{{.URL}}" class="service-card" target="_blank" rel="noopener noreferrer">
+                <img src="{{.Icon}}" alt="{{.Name}} icon" class="service-icon" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="service-icon-error" style="display: none;">{{slice .Name 0 1}}</div>
+                <div class="service-name">{{.Name}}</div>
+                <div class="service-description">{{.Description}}</div>
+            </a>
+            {{end}}
+        </div>
+
+        <footer>
+            <p>Serving {{len .Services}} services</p>
+        </footer>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div class="modal" id="addServiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Service</h2>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <div id="alertContainer"></div>
+            <form id="addServiceForm">
+                <div class="form-group">
+                    <label class="form-label" for="serviceName">Service Name *</label>
+                    <input type="text" id="serviceName" class="form-input" placeholder="e.g., Plex" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="serviceUrl">Service URL *</label>
+                    <input type="url" id="serviceUrl" class="form-input" placeholder="e.g., http://192.168.1.50:32400" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="serviceIcon">Icon URL <span style="color: #718096; font-weight: normal;">(optional - auto-detected if empty)</span></label>
+                    <input type="url" id="serviceIcon" class="form-input" placeholder="Leave empty to auto-detect, or provide a custom URL">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="serviceDescription">Description</label>
+                    <input type="text" id="serviceDescription" class="form-input" placeholder="Brief description of the service">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Handle icon loading errors more gracefully
+        document.querySelectorAll('.service-icon').forEach(img => {
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+                this.nextElementSibling.style.display = 'flex';
+            });
+        });
+
+        // Modal and Add Service functionality
+        const modal = document.getElementById('addServiceModal');
+        const addServiceBtn = document.getElementById('addServiceBtn');
+        const closeModal = document.getElementById('closeModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const addServiceForm = document.getElementById('addServiceForm');
+        const alertContainer = document.getElementById('alertContainer');
+
+        // Check if config is writeable on load
+        async function checkWriteable() {
+            try {
+                const response = await fetch('/api/config/writeable');
+                const data = await response.json();
+                if (!data.writeable) {
+                    addServiceBtn.disabled = true;
+                    addServiceBtn.title = 'Config file is not writeable';
+                }
+            } catch (error) {
+                console.error('Error checking writeability:', error);
+                addServiceBtn.disabled = true;
+                addServiceBtn.title = 'Error checking config writeability';
+            }
+        }
+
+        // Show alert message
+        function showAlert(message, type) {
+            alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        // Open modal
+        addServiceBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+        });
+
+        // Close modal
+        function closeModalFunc() {
+            modal.classList.remove('active');
+            addServiceForm.reset();
+            alertContainer.innerHTML = '';
+        }
+
+        closeModal.addEventListener('click', closeModalFunc);
+        cancelBtn.addEventListener('click', closeModalFunc);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModalFunc();
+            }
+        });
+
+        // Handle form submission
+        addServiceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const serviceData = {
+                name: document.getElementById('serviceName').value,
+                url: document.getElementById('serviceUrl').value,
+                icon: document.getElementById('serviceIcon').value,
+                description: document.getElementById('serviceDescription').value
+            };
+
+            try {
+                const response = await fetch('/api/services', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(serviceData)
+                });
+
+                if (response.ok) {
+                    showAlert('Service added successfully! Reloading...', 'success');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    const errorText = await response.text();
+                    showAlert(errorText || 'Failed to add service', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding service:', error);
+                showAlert('Error adding service: ' + error.message, 'error');
+            }
+        });
+
+        // Check writeability on page load
+        checkWriteable();
+    </script>
+</body>
+</html>
+
