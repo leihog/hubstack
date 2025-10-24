@@ -6,3 +6,5 @@ bin/
 
 # Output of the go coverage tool
 *.out
+
+config.yml
