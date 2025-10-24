@@ -1,0 +1,27 @@
+name: hubstack
+
+services:
+  hubstack:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM alpine:latest
+        RUN apk --no-cache add ca-certificates
+        WORKDIR /app
+        COPY bin/hubstack-linux-amd64 /app/hubstack
+        COPY templates ./templates
+        COPY config.yml .
+        RUN chmod +x /app/hubstack
+        EXPOSE 80
+        CMD ["/app/hubstack", "-port", "80"]
+    container_name: hubstack
+    ports:
+      - "80:80"
+    volumes:
+      # Mount config.yml and templates so you can edit them without rebuilding the image
+      - ./config.yml:/app/config.yml:rw
+      - ./templates:/app/templates:ro
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Stockholm
+
